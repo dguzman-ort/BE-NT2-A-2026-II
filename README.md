@@ -1,5 +1,3 @@
-222
-
 # BE-PNT2-A-2026-II
 
 Repositorio de la clase de PNT2 A 2026-II
