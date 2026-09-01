@@ -8,7 +8,7 @@ const personas = [
         telefono: '2345678901'
     },
     {
-        nombre: 'Maria',
+        nombre: 'Jose',
         apellido: 'Martinez',
         edad: 30,
         telefono: '2345678902'
@@ -26,7 +26,19 @@ const personas = [
         telefono: '2345678904'
     },
     {
+        nombre: 'Andres',
+        apellido: 'Garcia',
+        edad: 30,
+        telefono: '2345678905'
+    },
+    {
         nombre: 'Luis',
+        apellido: 'Garcia',
+        edad: 30,
+        telefono: '2345678905'
+    },
+    {
+        nombre: 'Leonardo',
         apellido: 'Garcia',
         edad: 30,
         telefono: '2345678905'
