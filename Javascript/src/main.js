@@ -12,9 +12,14 @@ import { setupCounter } from './counter.js'
 // import './js/function_alto_orden.js'
 // import './js/callbacks.js'
 
-/** EJERCICIOS */
-import './js/ejercicios/filter.js'
+/** PROMESAS */
+// import './js/promises-1.js'
+import './js/promises-2.js'
 
+/** EJERCICIOS */
+// import './js/ejercicios/filter.js'
+// import './js/ejercicios/map.js'
+// import './js/ejercicios/agrupador.js'
 
 
 document.querySelector('#app').innerHTML = `
