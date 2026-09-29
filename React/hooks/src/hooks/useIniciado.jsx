@@ -15,6 +15,7 @@ export const IniciadoProvider = ({ children }) => {
       //TODO: resetear el contador
       //setCount(0)
     }
+    
 
     return (
         <GlobalContext.Provider value={{ isRunning, handleIsRunningChange, handleCountReset  }}>
