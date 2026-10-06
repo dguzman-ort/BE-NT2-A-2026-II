@@ -1,15 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, Text, View, Button, SafeAreaView } from 'react-native';
 import { vibrate } from './utils';
 
+import Constants from 'expo-constants';
+import Cronometro from './components/Cronometro';
+import Control from './components/Control';
+import { CronometroProvider } from './hooks/useCronometro';
+
+// console.log(Constants);
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Hola, prueba para vibrar!</Text>
-      <Button title="Vibrate" onPress={() => vibrate()} />
-      <StatusBar style="auto" />
+        
+        <CronometroProvider>
+          <Cronometro />
+          <Control />
+        </CronometroProvider>
+        
+        <StatusBar style="auto" />
     </View>
+    
+
+    
+    
   );
 }
 
@@ -18,6 +32,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
+    // justifyContent: 'center',
+    paddingTop: Constants.statusBarHeight,
   },
 });
