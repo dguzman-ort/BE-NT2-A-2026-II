@@ -1,4 +1,4 @@
-const MAX_VEHICULOS = 5;
+const MAX_VEHICULOS = 20;
 
 const marcas = [
     {

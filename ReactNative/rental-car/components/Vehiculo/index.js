@@ -85,12 +85,12 @@ const Vehiculo = ({ vehiculo }) => {
     const colorNombre = vehiculo.color?.nombre ?? '';
 
 
-    useEffect(() => {
-        console.log('Vehiculo renderizado', vehiculo.id);
-        return () => {
-            console.log('Vehiculo desmontado', vehiculo.id);
-        };
-    }, []);
+    // useEffect(() => {
+    //     console.log('Vehiculo renderizado', vehiculo.id);
+    //     return () => {
+    //         console.log('Vehiculo desmontado', vehiculo.id);
+    //     };
+    // }, []);
 
     return (
         <View style={[styles.shadow, { width: width - 32 }]}>
