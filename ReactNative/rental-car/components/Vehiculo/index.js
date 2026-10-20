@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-
+import { router } from 'expo-router';
 const colors = {
     card: '#FFFFFF',
     primary: '#000412',
@@ -77,6 +77,7 @@ function Spec({ icon, label, accent = false }) {
 }
 
 const Vehiculo = ({ vehiculo }) => {
+    
     const { width } = useWindowDimensions();
     const [favorito, setFavorito] = useState(false);
     const disponible = Boolean(vehiculo.disponible);
@@ -164,6 +165,7 @@ const Vehiculo = ({ vehiculo }) => {
                         </Text>
                     </View>
                     <Pressable
+                        onPress={() => router.push(`/reservar/${vehiculo.id}`)}
                         style={({ pressed }) => [
                             styles.rent,
                             pressed && disponible && styles.rentPressed,
