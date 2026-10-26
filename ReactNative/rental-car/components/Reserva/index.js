@@ -1,5 +1,10 @@
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+
+import { useFechasAlquiler } from './useFechasAlquiler';
+import { cotizar, TARIFAS } from './alquiler';
+
 
 const colors = {
     surface: '#F7F9FB',
@@ -19,7 +24,10 @@ const colors = {
     onTertiaryContainer: '#0090C2',
     banner: 'rgba(0, 144, 194, 0.10)',
     primaryFixedDim: '#B8C7E6',
+    outline: '#75777E',
 };
+
+const MAX_NOTAS = 250;
 
 const FALLBACK_IMAGE =
     'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80';
@@ -101,6 +109,9 @@ function FilaPago({ label, value }) {
     );
 }
 
+
+
+
 const Reserva = ({ vehiculo }) => {
     const marca = vehiculo?.marca ?? 'Tesla';
     const modelo = vehiculo?.modelo ?? 'Model 3';
@@ -114,6 +125,25 @@ const Reserva = ({ vehiculo }) => {
     const precio = vehiculo?.precio ?? 1000;
     const disponible = vehiculo ? Boolean(vehiculo.disponible) : true;
     const ciudad = vehiculo?.ciudad?.split(',')[0] ?? 'Madrid';
+
+    const [lugarRecogida, setLugarRecogida] = useState('');
+    const [lugarDevolucion, setLugarDevolucion] = useState('');
+    const [notas, setNotas] = useState('');
+    const [notasFocused, setNotasFocused] = useState(false);
+
+    const { recogida, devolucion, dias, editar, selector } = useFechasAlquiler();
+    const pago = cotizar(dias, precio);
+    const diasTexto = dias === 1 ? '1 día' : `${dias} días`;
+
+    const handleConfirmarYPagar = () => {
+        console.log('Confirmar y Pagar');
+        console.log('Fecha de recogida:', recogida.dia, recogida.hora);
+        console.log('Fecha de devolución:', devolucion.dia, devolucion.hora);
+        console.log('Lugar de recogida:', lugarRecogida);
+        console.log('Lugar de devolución:', lugarDevolucion);
+        console.log('Notas:', notas);
+    };
+
 
     return (
         <View style={styles.screen}>
@@ -204,21 +234,21 @@ const Reserva = ({ vehiculo }) => {
                         trailing={
                             <View style={styles.diasBadge}>
                                 <MaterialIcons name="timelapse" size={14} color={colors.onSecondaryFixed} />
-                                <Text style={styles.diasText}>3 días</Text>
+                                <Text style={styles.diasText}>{diasTexto}</Text>
                             </View>
                         }
                     />
                     <View style={styles.fechas}>
-                        <View style={styles.fecha}>
+                        <TouchableOpacity onPress={() => editar('recogida')} style={styles.fecha}>
                             <Text style={styles.fechaLabel}>Recogida</Text>
-                            <Text style={styles.fechaDia}>Lun 14 Oct</Text>
-                            <Text style={styles.fechaHora}>10:00 AM</Text>
-                        </View>
-                        <View style={styles.fecha}>
+                            <Text style={styles.fechaDia}>{recogida.dia}</Text>
+                            <Text style={styles.fechaHora}>{recogida.hora}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => editar('devolucion')} style={styles.fecha}>
                             <Text style={styles.fechaLabel}>Devolución</Text>
-                            <Text style={styles.fechaDia}>Jue 17 Oct</Text>
-                            <Text style={styles.fechaHora}>10:00 AM</Text>
-                        </View>
+                            <Text style={styles.fechaDia}>{devolucion.dia}</Text>
+                            <Text style={styles.fechaHora}>{devolucion.hora}</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -228,15 +258,25 @@ const Reserva = ({ vehiculo }) => {
                         <Text style={styles.fieldLabel}>Lugar de recogida</Text>
                         <View style={styles.lugar}>
                             <MaterialIcons name="flight-takeoff" size={20} color={colors.primary} />
-                            <View style={styles.lugarText}>
+                            {/* <View style={styles.lugarText}>
                                 <Text style={styles.lugarTitulo} numberOfLines={1}>
                                     Aeropuerto Adolfo Suárez Madrid-Barajas
                                 </Text>
                                 <Text style={styles.lugarDetalle} numberOfLines={1}>
                                     Terminal T4 · Parking VIP Sala Veloce
                                 </Text>
+                            </View> */}
+                            {/* <MaterialIcons name="expand-more" size={20} color={colors.outlineVariant} /> */}
+                            <View style={styles.lugarText}>
+                                <TextInput
+                                    style={styles.lugarInput}
+                                    placeholder="Aeropuerto Adolfo Suárez Madrid-Barajas"
+                                    placeholderTextColor={colors.onSurfaceVariant}
+                                    value={lugarRecogida}
+                                    onChangeText={setLugarRecogida}
+                                />
                             </View>
-                            <MaterialIcons name="expand-more" size={20} color={colors.outlineVariant} />
+                            
                         </View>
                     </View>
                     <View style={styles.toggleRow}>
@@ -264,7 +304,7 @@ const Reserva = ({ vehiculo }) => {
                         />
                         <ProteccionOpcion
                             titulo="Cobertura Completa"
-                            precio="+$45 / día"
+                            precio={`+${formatPrecio(TARIFAS.coberturaCompletaDia)} / día`}
                             detalle="Deducible $0, protección total para cristales, neumáticos y asistencia en carretera 24/7 sin esperas."
                             seleccionada
                             recomendada
@@ -279,13 +319,39 @@ const Reserva = ({ vehiculo }) => {
 
                 <View style={styles.card}>
                     <SeccionTitulo
+                        icon="edit-note"
+                        titulo="Notas o solicitudes especiales"
+                        trailing={<Text style={styles.opcional}>(Opcional)</Text>}
+                    />
+                    <View style={styles.notasCampo}>
+                        <View style={[styles.notasInputWrap, notasFocused && styles.notasInputWrapFocused]}>
+                            <TextInput
+                                style={styles.notasInput}
+                                accessibilityLabel="Notas o solicitudes especiales"
+                                placeholder="Ej. Necesito silla infantil para bebé, número de vuelo para coordinar entrega, llegada demorada..."
+                                placeholderTextColor={colors.outline}
+                                value={notas}
+                                onChangeText={setNotas}
+                                maxLength={MAX_NOTAS}
+                                multiline
+                                textAlignVertical="top"
+                                onFocus={() => setNotasFocused(true)}
+                                onBlur={() => setNotasFocused(false)}
+                            />
+                        </View>
+                        <Text style={styles.notasLimite}>Máx. {MAX_NOTAS} caracteres</Text>
+                    </View>
+                </View>
+
+                <View style={styles.card}>
+                    <SeccionTitulo
                         titulo="Desglose de Pago"
                         trailing={<Text style={styles.impuestos}>Impuestos incluidos</Text>}
                     />
                     <View style={styles.filas}>
-                        <FilaPago label="Tarifa base (3 días × $1,000)" value="$3,000" />
-                        <FilaPago label="Cobertura Completa (3 días × $45)" value="$135" />
-                        <FilaPago label="Tasas de aeropuerto y gestión" value="$65" />
+                        <FilaPago label={`Tarifa base (${diasTexto} × ${formatPrecio(precio)})`} value={formatPrecio(pago.base)} />
+                        <FilaPago label={`Cobertura Completa (${diasTexto} × ${formatPrecio(TARIFAS.coberturaCompletaDia)})`} value={formatPrecio(pago.cobertura)} />
+                        <FilaPago label="Tasas de aeropuerto y gestión" value={formatPrecio(pago.tasas)} />
                         <View style={styles.deposito}>
                             <View style={styles.depositoInfo}>
                                 <MaterialIcons name="info" size={16} color={colors.onSurfaceVariant} />
@@ -294,13 +360,13 @@ const Reserva = ({ vehiculo }) => {
                                     <Text style={styles.reembolsableText}>Reembolsable</Text>
                                 </View>
                             </View>
-                            <Text style={styles.filaValor}>$300</Text>
+                            <Text style={styles.filaValor}>{formatPrecio(TARIFAS.deposito)}</Text>
                         </View>
                     </View>
                     <View style={styles.totalRow}>
                         <View>
                             <Text style={styles.totalLabel}>Monto Final</Text>
-                            <Text style={styles.totalValor}>$3,200</Text>
+                            <Text style={styles.totalValor}>{formatPrecio(pago.total)}</Text>
                         </View>
                         <View style={styles.sinCargos}>
                             <MaterialIcons name="verified-user" size={15} color={colors.secondary} />
@@ -318,10 +384,10 @@ const Reserva = ({ vehiculo }) => {
                 </View>
 
                 <View style={styles.cta}>
-                    <View style={styles.payButton}>
+                    <TouchableOpacity onPress={handleConfirmarYPagar} style={styles.payButton}>
                         <MaterialIcons name="lock" size={20} color={colors.onSecondary} />
-                        <Text style={styles.payText}>Confirmar y Pagar $3,200</Text>
-                    </View>
+                        <Text style={styles.payText}>Confirmar y Pagar {formatPrecio(pago.total)}</Text>
+                    </TouchableOpacity>
                     <View style={styles.ssl}>
                         <MaterialIcons name="shield" size={14} color={colors.onSurfaceVariant} />
                         <Text style={styles.sslText}>
@@ -330,6 +396,7 @@ const Reserva = ({ vehiculo }) => {
                     </View>
                 </View>
             </ScrollView>
+            {selector}
         </View>
     );
 };
@@ -805,6 +872,42 @@ const styles = StyleSheet.create({
     },
     opcionDetalleOn: {
         color: colors.primaryFixedDim,
+    },
+    opcional: {
+        fontSize: 10,
+        lineHeight: 14,
+        fontWeight: '500',
+        letterSpacing: 0.4,
+        color: colors.onSurfaceVariant,
+    },
+    notasCampo: {
+        gap: 6,
+    },
+    notasInputWrap: {
+        backgroundColor: colors.surfaceLow,
+        borderRadius: 12,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: 'transparent',
+    },
+    notasInputWrapFocused: {
+        borderColor: colors.primary,
+    },
+    notasInput: {
+        minHeight: 48,
+        fontSize: 12,
+        lineHeight: 16,
+        color: colors.primary,
+        padding: 0,
+    },
+    notasLimite: {
+        alignSelf: 'flex-end',
+        paddingHorizontal: 4,
+        fontSize: 10,
+        lineHeight: 14,
+        fontWeight: '700',
+        letterSpacing: 0.4,
+        color: colors.onSurfaceVariant,
     },
     impuestos: {
         fontSize: 10,

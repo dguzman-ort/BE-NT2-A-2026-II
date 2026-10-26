@@ -1,4 +1,4 @@
-const MAX_VEHICULOS = 5;
+const MAX_VEHICULOS = 20;
 
 const marcas = [
     {
@@ -132,7 +132,7 @@ const crearVehiculo = (index) => {
     const modelo = marca.modelos[index % marca.modelos.length]
     const rentalCompany = rentalCompanies[index % rentalCompanies.length]
     return {
-        id: index + 1,
+        id: (index + 1).toString(),
         marca: marca.nombre,
         modelo: modelo.nombre,
         anio: anios[index % anios.length],
@@ -167,4 +167,13 @@ const getVehiculos = () => {
     })
 }
 
-export { getVehiculos }
+const getVehiculo = (id) => {
+    console.log('looking for vehiculo with id', parseInt(id));
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const vehiculo = vehiculos.find(vehiculo => vehiculo.id === id);
+            resolve(vehiculo);
+        }, 1000)
+    })
+}
+export { getVehiculos, getVehiculo }
