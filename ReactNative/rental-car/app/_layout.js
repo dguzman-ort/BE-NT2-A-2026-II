@@ -1,7 +1,10 @@
 import Navigation from './navigation';
+import { AuthProvider } from '../hooks/useAuth';
 
 export default function RootLayout() {
     return (
-        <Navigation />
+        <AuthProvider>
+            <Navigation />
+        </AuthProvider>
     )
 }

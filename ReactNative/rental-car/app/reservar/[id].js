@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableOpacity, Switch, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, getParamsValue } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFechasAlquiler } from '../../components/Reserva/useFechasAlquiler';
 import { cotizar, TARIFAS } from '../../components/Reserva/alquiler';
 
-import { getVehiculo } from '../../services/vehiculos';
+import { getVehiculo, bookVehiculo } from '../../services/vehiculos';
 
 
 const colors = {
@@ -122,25 +122,79 @@ const Reserva = () => {
     const vehiculoId = params.id;
     const [vehiculo, setVehiculo] = useState(null);
     const [lugarRecogida, setLugarRecogida] = useState('');
-    const [lugarDevolucion, setLugarDevolucion] = useState('');
+    const [lugarDevolucion, setLugarDevolucion] = useState(lugarRecogida);
     const [notas, setNotas] = useState('');
     const [notasFocused, setNotasFocused] = useState(false);
-
+    const [entregarEnLaMismaUbicacion, setEntregarEnLaMismaUbicacion] = useState(true);
     const { recogida, devolucion, dias, editar, selector } = useFechasAlquiler();
 
     useEffect(() => {
         const fetchVehiculo = async () => {
             const data = await getVehiculo(vehiculoId);
-            console.log('vehiculo', data);
+            // console.log('vehiculo', data);
             setVehiculo(data);
         };
         fetchVehiculo();
     }, [vehiculoId]);
 
+    useEffect(() => {
+        if (entregarEnLaMismaUbicacion) {
+            setLugarDevolucion(lugarRecogida);
+        }
+    }, [entregarEnLaMismaUbicacion, lugarRecogida]);
+
+    const handleEntregarEnLaMismaUbicacion = (value) => {
+        setEntregarEnLaMismaUbicacion(value);
+        if (!value) {
+            setLugarDevolucion('');
+        }
+    };
+
     const precio = vehiculo?.precio ?? 0;
     const ciudad = vehiculo?.ciudad ?? '';
     const pago = cotizar(dias, precio);
     const diasTexto = dias === 1 ? '1 día' : `${dias} días`;
+
+    const handleConfirmarYPagar = async () => {
+        console.log('Recogida:', recogida);
+        console.log('Devolución:', devolucion);
+        const data = {
+            vehicle_id: vehiculo.id,
+            start_date: recogida.fecha,
+            end_date: devolucion.fecha,
+            lugarRecogida: lugarRecogida,
+            lugarDevolucion: lugarDevolucion,
+            entregarEnLaMismaUbicacion: entregarEnLaMismaUbicacion,
+            notas: notas,
+          }
+        console.log('Data to send:', data);
+
+        //validar que la fecha de recogida sea menor que la fecha de devolución
+        if (new Date(recogida.fecha) > new Date(devolucion.fecha)) {
+            Alert.alert('Error', 'La fecha de recogida debe ser menor que la fecha de devolución');
+            return;
+        }
+
+        //validar que el lugar de recogida y devolución no sean vacíos
+        if (lugarRecogida === '' || lugarDevolucion === '') {
+            Alert.alert('Error', 'El lugar de recogida y devolución no pueden ser vacíos');
+            return;
+        }
+
+        // return;
+        try{
+            const response = await bookVehiculo(data);
+            console.log('Response:', response);
+            Alert.alert('Reserva exitosa', 'El vehículo ha sido reservado correctamente');
+            router.back();
+        } catch (error) {
+            console.error('Error booking vehicle:', error);
+            Alert.alert('Error', 'Error al reservar el vehículo: ' + error.message);
+        }
+
+
+    };
+
 
     if (!vehiculo) {
         return (
@@ -149,16 +203,6 @@ const Reserva = () => {
             </View>
         );
     }
-
-    const handleConfirmarYPagar = () => {
-        console.log('Confirmar y Pagar');
-        console.log('Fecha de recogida:', recogida.dia, recogida.hora);
-        console.log('Fecha de devolución:', devolucion.dia, devolucion.hora);
-        console.log('Lugar de recogida:', lugarRecogida);
-        console.log('Lugar de devolución:', lugarDevolucion);
-        console.log('Notas:', notas);
-    };
-
 
     return (
         <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -304,10 +348,29 @@ const Reserva = () => {
                             <MaterialIcons name="sync-alt" size={20} color={colors.onSurfaceVariant} />
                             <Text style={styles.toggleText}>Entregar en la misma ubicación</Text>
                         </View>
-                        <View style={styles.switchTrack}>
-                            <View style={styles.switchThumb} />
-                        </View>
+                        <Switch
+                            value={entregarEnLaMismaUbicacion}
+                            onValueChange={handleEntregarEnLaMismaUbicacion}
+                        />
                     </View>
+                    {!entregarEnLaMismaUbicacion ? (
+                        <View style={styles.field}>
+                            <Text style={styles.fieldLabel}>Lugar de devolución</Text>
+                            <View style={styles.lugar}>
+                                <MaterialIcons name="flight-land" size={20} color={colors.primary} />
+                                <View style={styles.lugarText}>
+                                    <TextInput
+                                        style={styles.lugarInput}
+                                        accessibilityLabel="Lugar de devolución"
+                                        placeholder="Lugar de devolución"
+                                        placeholderTextColor={colors.onSurfaceVariant}
+                                        value={lugarDevolucion}
+                                        onChangeText={setLugarDevolucion}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+                    ) : null}
                 </View>
 
                 <View style={styles.card}>
@@ -746,6 +809,13 @@ const styles = StyleSheet.create({
     },
     lugarText: {
         flex: 1,
+    },
+    lugarInput: {
+        fontSize: 12,
+        lineHeight: 16,
+        fontWeight: '600',
+        color: colors.primary,
+        padding: 0,
     },
     lugarTitulo: {
         fontSize: 12,
