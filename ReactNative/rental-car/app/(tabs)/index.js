@@ -7,8 +7,10 @@ const Index = () => {
     const [vehiculos, setVehiculos] = useState([]);
     useEffect(() => {
         getVehiculos().then(vehiculos => {
-            setVehiculos(vehiculos)
-        })
+            // console.log('vehiculos', vehiculos);
+            setVehiculos(vehiculos.data)
+        }).catch(error => console.error('Error fetching vehiculos:', error));
+        
     }, [])
     return (
         <SafeAreaView style={styles.container}>

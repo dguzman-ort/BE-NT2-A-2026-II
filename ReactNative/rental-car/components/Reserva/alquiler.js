@@ -79,6 +79,7 @@ export function etiqueta(instante) {
     return {
         dia: `${DIAS[fecha.getDay()]} ${fecha.getDate()} ${MESES[fecha.getMonth()]}`,
         hora: `${hora12}:${minutos} ${sufijo}`,
+        fecha: fecha.toISOString(),
     };
 }
 

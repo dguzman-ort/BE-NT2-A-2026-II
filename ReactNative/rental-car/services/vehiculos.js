@@ -1,3 +1,6 @@
+const BASE_URL = 'http://localhost:8787';
+
+
 const MAX_VEHICULOS = 20;
 
 const marcas = [
@@ -157,23 +160,98 @@ const crearVehiculo = (index) => {
 const vehiculos = Array.from({ length: MAX_VEHICULOS }, (_, index) => crearVehiculo(index))
 //console.log(vehiculos)
 
-const getVehiculos = () => {
+const getVehiculos = async () => {
     // TODO: Implementar la logica para obtener los vehiculos desde una API.
     // Por ahora, devolvemos los vehiculos hardcodeados.
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(vehiculos)
-        }, 1000)
-    })
+    // return new Promise((resolve) => {
+    //     setTimeout(() => {
+    //         resolve(vehiculos)
+    //     }, 1000)
+    // })
+
+    try{
+        const response = await fetch(`${BASE_URL}/api/v1/vehicles`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch vehicles');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching vehiculos:', error);
+        throw error;
+    }
 }
 
-const getVehiculo = (id) => {
-    console.log('looking for vehiculo with id', parseInt(id));
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const vehiculo = vehiculos.find(vehiculo => vehiculo.id === id);
-            resolve(vehiculo);
-        }, 1000)
-    })
+const getVehiculo = async (id) => {
+    // console.log('looking for vehiculo with id', parseInt(id));
+    // return new Promise((resolve) => {
+    //     setTimeout(() => {
+    //         const vehiculo = vehiculos.find(vehiculo => vehiculo.id === id);
+    //         resolve(vehiculo);
+    //     }, 1000)
+    // })
+
+    try{
+        const response = await fetch(`${BASE_URL}/api/v1/vehicles/${parseInt(id)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch vehicle');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching vehiculo:', error);
+        throw error;
+    }
 }
-export { getVehiculos, getVehiculo }
+
+const getBookings = async () => {
+    const accessToken = '123';
+    try{
+        const response = await fetch(`${BASE_URL}/api/v1/bookings`, {
+            headers: {
+                'X-User-Id': accessToken,
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch bookings');
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (error) {
+        console.error('Error fetching bookings:', error);
+        throw error;
+    }
+}
+
+const bookVehiculo = async (data) => {
+    // TODO: Implementar la logica para obtener el access token desde una API.
+    // Por ahora, devolvemos un access token hardcodeado.
+    // const accessToken = await getAccessToken();
+    const accessToken = '123';
+
+
+    try{
+        const response = await fetch(`${BASE_URL}/api/v1/bookings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+
+                //'Authorization': `Bearer ${accessToken}`,
+                'X-User-Id': accessToken,
+
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to book vehicle [${response.status}] ${response.statusText}`);
+        }
+        const responseData = await response.json();
+        return responseData;
+    } catch (error) {
+        console.error('Error booking vehicle:', error);
+        throw error;
+    }
+}
+export { getVehiculos, getVehiculo, bookVehiculo, getBookings }

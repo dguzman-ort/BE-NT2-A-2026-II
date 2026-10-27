@@ -117,7 +117,11 @@ function SelectorIos({ campo, borrador, minimo, onBorrador, onCancelar, onListo 
 }
 
 export function useFechasAlquiler() {
-    const [intervalo, setIntervalo] = useState(() => intervaloInicial(Date.now()));
+    const [intervalo, setIntervalo] = useState(() => {
+        const manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        return intervaloInicial(manana.getTime());
+    });
     const intervaloRef = useRef(intervalo);
     const bloqueado = useRef(false);
     const [hoja, setHoja] = useState(null);
