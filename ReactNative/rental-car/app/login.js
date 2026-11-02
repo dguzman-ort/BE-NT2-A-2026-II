@@ -135,7 +135,7 @@ function SocialButton({ name, label, accessibilityLabel, color, onPress }) {
 }
 
 const Login = () => {
-    const { setAuth } = useAuth();
+    const { handleLogin } = useAuth();
     const insets = useSafeAreaInsets();
     const passwordRef = useRef(null);
     const pulse = useRef(new Animated.Value(1)).current;
@@ -171,7 +171,7 @@ const Login = () => {
         login(email, password)
             .then((response) => {
                 console.log(response);
-                setAuth(response);                
+                handleLogin(response);                
             })
             .catch((error) => {
                 console.log(error);
