@@ -1,3 +1,6 @@
+const AUTH_KEY = '@authData';
+
+
 const login = async (email, password) => {
     // const response = await fetch('https://api.example.com/login', {
     //     method: 'POST',
@@ -30,4 +33,4 @@ const login = async (email, password) => {
     });
 }
 
-export { login };
+export { login, AUTH_KEY };
