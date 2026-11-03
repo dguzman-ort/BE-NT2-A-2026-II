@@ -53,6 +53,7 @@ export default function TabsLayout() {
             <Tabs.Screen name="bookings" options={{ title: 'Bookings' }} />
             <Tabs.Screen name="favorites" options={{ title: 'Favorites' }} />
             <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+            <Tabs.Screen name="map" options={{ title: 'Map' }} />
         </Tabs>
     )
 }
